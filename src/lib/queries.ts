@@ -118,6 +118,16 @@ export async function fetchEventsByCityId(cityId: string): Promise<VenueEvent[]>
   return data ?? [];
 }
 
+export async function fetchVenueEventsByVenueId(venueId: string): Promise<VenueEvent[]> {
+  const { data, error } = await supabase
+    .from('venue_events')
+    .select('*')
+    .eq('venue_id', venueId)
+    .order('start_date', { ascending: true });
+  if (error) throw error;
+  return data ?? [];
+}
+
 export async function fetchVenueWithCity(venueId: string): Promise<VenueWithCity | null> {
   const { data: venue, error } = await supabase
     .from('venues')
