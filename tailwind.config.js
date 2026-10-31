@@ -1,0 +1,103 @@
+/** @type {import('tailwindcss').Config} */
+export default {
+  content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
+  theme: {
+    extend: {
+      colors: {
+        sea: {
+          50: '#f0f9fa',
+          100: '#daeff2',
+          200: '#b8e0e6',
+          300: '#8ac9d4',
+          400: '#56a8bb',
+          500: '#3a8aa0',
+          600: '#316f86',
+          700: '#2d5a6e',
+          800: '#2b4a59',
+          900: '#273f4c',
+          950: '#162732',
+        },
+        sand: {
+          50: '#fdfbf6',
+          100: '#faf3e3',
+          200: '#f3e6c2',
+          300: '#ecd39b',
+          400: '#e2bb6e',
+          500: '#d8a24f',
+          600: '#c98c41',
+          700: '#a76c37',
+          800: '#845534',
+          900: '#6c4730',
+          950: '#3d2519',
+        },
+        terracotta: {
+          50: '#fdf5f2',
+          100: '#fbe7e0',
+          200: '#f6cdbf',
+          300: '#efaa93',
+          400: '#e57a5d',
+          500: '#d65a3d',
+          600: '#bf4330',
+          700: '#9e322a',
+          800: '#7f2a28',
+          900: '#682928',
+          950: '#381310',
+        },
+        olive: {
+          50: '#f7f9f1',
+          100: '#eef3da',
+          200: '#dbe7b6',
+          300: '#c2d58c',
+          400: '#a8be63',
+          500: '#8ba34a',
+          600: '#6c8238',
+          700: '#55642f',
+          800: '#464f2b',
+          900: '#3b4227',
+          950: '#1f2413',
+        },
+        ivory: {
+          50: '#fdfcfa',
+          100: '#faf7f0',
+          200: '#f4efe1',
+          300: '#ebe2cd',
+          400: '#ddcfa8',
+          500: '#cdb884',
+        },
+      },
+      fontFamily: {
+        display: ['"Cormorant Garamond"', 'Georgia', 'serif'],
+        sans: ['"Inter"', 'system-ui', 'sans-serif'],
+      },
+      boxShadow: {
+        soft: '0 6px 24px -8px rgba(40, 60, 70, 0.18)',
+        card: '0 12px 36px -12px rgba(40, 60, 70, 0.22)',
+        deep: '0 24px 60px -20px rgba(40, 60, 70, 0.35)',
+      },
+      backgroundImage: {
+        'sea-gradient': 'linear-gradient(180deg, #f0f9fa 0%, #ffffff 60%)',
+        'hero-overlay': 'linear-gradient(180deg, rgba(22,39,50,0.45) 0%, rgba(22,39,50,0.15) 45%, rgba(255,255,255,0) 100%)',
+      },
+      keyframes: {
+        'fade-up': {
+          '0%': { opacity: '0', transform: 'translateY(16px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        'fade-in': {
+          '0%': { opacity: '0' },
+          '100%': { opacity: '1' },
+        },
+        float: {
+          '0%, 100%': { transform: 'translateY(0)' },
+          '50%': { transform: 'translateY(-8px)' },
+        },
+      },
+      animation: {
+        'fade-up': 'fade-up 0.7s ease-out forwards',
+        'fade-in': 'fade-in 0.6s ease-out forwards',
+        float: 'float 5s ease-in-out infinite',
+      },
+    },
+  },
+  plugins: [],
+};
