@@ -22,6 +22,8 @@ export default defineConfig({
   ...(previewMode
     ? {
         server: {
+          // Bind mounts in the sandbox do not always emit inotify events.
+          watch: { usePolling: true, interval: 300 },
           proxy: {
             '/rest/v1': {
               target: 'http://api:3000',

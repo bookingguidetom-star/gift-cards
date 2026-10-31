@@ -10,7 +10,7 @@ export default function CitiesPage() {
   const [query, setQuery] = useState('');
   const [region, setRegion] = useState<string>('All');
 
-  const regions = ['All', 'Dalmatia', 'Istria', 'Kvarner', 'Central Croatia', 'Northern Croatia', 'Slavonia'];
+  const regions = ['All', ...Array.from(new Set((cities.data ?? []).map((c) => c.region))).sort()];
 
   const filtered = (cities.data ?? []).filter((c) => {
     const matchesQuery = c.name.toLowerCase().includes(query.toLowerCase()) ||

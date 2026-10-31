@@ -43,6 +43,21 @@ from the author's original database, and `20261030050000` selected a non-existen
 `(SELECT id FROM cities WHERE slug = '…')`, and the coastal activity seed uses the city's
 image (`c.image_url`). Do not reintroduce hardcoded city ids.
 
+## Catalog conventions
+
+- Destinations live in `cities` (77 after `20261031130000`), with `region` holding the
+  official county ("Split-Dalmatia County") for newer rows and broad labels ("Dalmatia")
+  for the oldest ones. `CitiesPage` builds its filter chips from the values actually
+  present, so both styles are selectable — do not hardcode a region list again.
+- Theatres and cinemas are `category = 'culture'` rows distinguished by
+  `venue_type` (`theatre` / `cinema`), and `VenueCard` shows the type in its badge.
+  `20261031131000` seeds named national/city theatres and art-house cinemas for the
+  larger cities, then fills every remaining destination with its municipal culture
+  house and town cinema — those are programme-dependent and described as such.
+- `venue_events` rows are either day-precision (published dates) or month-precision
+  (`start_date` must be the 1st of the month). Month rows carry a `schedule_note`
+  explaining that the organiser publishes the exact dates each season.
+
 ## Verifying it works
 
 ```bash

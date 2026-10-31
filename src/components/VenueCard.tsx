@@ -18,6 +18,7 @@ export default function VenueCard({ venue }: { venue: Venue }) {
         <span className="absolute left-3 top-3 chip bg-white/90 text-sea-800 backdrop-blur-sm">
           <CategoryIcon category={venue.category} className="h-3.5 w-3.5" />
           {meta.shortLabel}
+          {venue.venue_type ? ` · ${venue.venue_type}` : ''}
         </span>
         {venue.featured && (
           <span className="absolute right-3 top-3 chip bg-terracotta-500 text-white">
