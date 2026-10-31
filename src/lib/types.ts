@@ -74,17 +74,21 @@ export interface GiftCard {
 
 export interface VenueEvent {
   id: string;
-  venue_id: string;
+  city_id: string;
+  venue_id: string | null;
   title: string;
   event_type: string;
   description: string | null;
   start_date: string;
   end_date: string | null;
   start_month: number;
+  date_precision: 'day' | 'month';
   is_recurring: boolean;
   schedule_note: string | null;
   ticket_url: string | null;
+  source_url: string | null;
   price_range: string | null;
+  event_venue: string | null;
 }
 
 export interface CityWithVenues extends City {

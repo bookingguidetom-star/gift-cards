@@ -14,6 +14,9 @@ Croatia Gift Cards is a React + TypeScript + Vite app backed by Supabase. It pre
 - Added a `nightlife` venue category, displayed as **Bars & Nightlife**, with initial listings for each of the six new coastal destinations.
 - Added direct venue listings with official business sites for Aurora Club in Primošten and Sabbia beach bar in Crikvenica. For Umag, Novigrad, Biograd, and Vodice, the listings point to tourism-board guides for waterfront areas rather than claiming specific bars have been independently verified.
 - Updated the destination count in the city list and several home-page labels so they no longer hard-code the previous count.
+- Added a sourced city-event calendar schema and city-level event fetching, with support for exact dates and month-only “dates to be confirmed” schedules.
+- Seeded organizer- and tourism-board-sourced event listings for 27 of the 32 configured destinations, including confirmed dates where published and clearly marked month-only seasonal entries otherwise. This is a researched starting schedule, not an exhaustive list of every event or village in Croatia; five destinations had no reliable future listing verified in this research pass.
+- Added a live seven-day forecast to destination pages using the Open-Meteo API; forecasts are intentionally limited to the provider’s short-range forecast window.
 - Nightlife entries with unknown prices say “Check details,” not “Free entry.”
 
 The original city seed has 20 destinations; another migration adds six islands; this work adds six coastal destinations. If all relevant migrations are applied, the catalog contains **32 destinations**. Treat the database as authoritative and avoid hard-coding that count.
@@ -58,9 +61,15 @@ Before adding more seed data, audit all existing migrations and counts by city a
 - `supabase/migrations/20261025062222_add_croatian_islands.sql.sql` — six island destinations.
 - `supabase/migrations/20261030050000_add_adriatic_destinations_and_experiences.sql` — recent coastal destinations and activities.
 - `supabase/migrations/20261030060000_add_nightlife_category.sql` — Bars & Nightlife category and seed entries.
+- `supabase/migrations/20261031060000_create_calendar_event_schedule.sql` — source-linked city event schedule schema.
+- `supabase/migrations/20261031070000_seed_croatian_city_events.sql` — source-linked confirmed and tentative city event listings.
+- `src/components/WeatherForecast.tsx` — live forecast UI and Open-Meteo integration.
+- `src/pages/EventsCalendarPage.tsx` — destination-wide calendar with month-only date markers.
+
+The destinations without a reliable future event listing verified in this research pass are Zadar, Opatija, Vis, Makarska, and Novigrad. This means the app has a research gap for those places, not that they have no events.
 
 ## Development and verification
 
 From the repository root, install dependencies with `npm install`, configure the app’s Supabase environment variables, then run `npm run dev`. Available checks in `package.json` are `npm run typecheck`, `npm run lint`, and `npm run build`.
 
-At the time this handoff was written, Node.js/npm were not available in the coding environment, and those checks and a live app preview had not been run. Apply the Supabase migrations to the intended project before expecting the newly seeded records to appear in the app.
+Run `npm ci`, configure the app’s Supabase environment variables, and then run `npm run dev`. The event and forecast UI requires the database migrations to be applied; live forecasts also require browser access to the Open-Meteo API.

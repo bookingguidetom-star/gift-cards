@@ -72,7 +72,6 @@ export async function fetchVenuesByIds(ids: string[]): Promise<Venue[]> {
 
 export interface CalendarEvent extends VenueEvent {
   venue_name: string;
-  city_id: string;
   city_name: string;
   city_slug: string;
 }
@@ -91,28 +90,21 @@ export async function fetchEventsCalendarData(): Promise<CalendarEvent[]> {
   const cityMap = new Map((citiesRes.data ?? []).map((c) => [c.id, c]));
   return events.map((e) => {
     const venue = venueMap.get(e.venue_id);
-    const city = venue ? cityMap.get(venue.city_id) : undefined;
+    const city = cityMap.get(e.city_id) ?? (venue ? cityMap.get(venue.city_id) : undefined);
     return {
       ...e,
-      venue_name: venue?.name ?? 'Unknown venue',
-      city_id: venue?.city_id ?? '',
+      venue_name: e.event_venue ?? venue?.name ?? city?.name ?? 'Unknown location',
       city_name: city?.name ?? '',
       city_slug: city?.slug ?? '',
-    } as CalendarEvent;
+    };
   });
 }
 
 export async function fetchEventsByCityId(cityId: string): Promise<VenueEvent[]> {
-  const { data: venues } = await supabase
-    .from('venues')
-    .select('id')
-    .eq('city_id', cityId);
-  if (!venues || venues.length === 0) return [];
-  const venueIds = venues.map((v) => v.id);
   const { data, error } = await supabase
     .from('venue_events')
     .select('*')
-    .in('venue_id', venueIds)
+    .eq('city_id', cityId)
     .order('start_date', { ascending: true });
   if (error) throw error;
   return data ?? [];

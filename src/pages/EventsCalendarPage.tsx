@@ -13,7 +13,7 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import { useAsync } from '@/lib/useAsync';
-import { fetchEventsCalendarData, type CalendarEvent } from '@/lib/queries';
+import { fetchCities, fetchEventsCalendarData, type CalendarEvent } from '@/lib/queries';
 import { Link } from '@/lib/router';
 
 const MONTH_NAMES = [
@@ -30,6 +30,7 @@ const EVENT_TYPE_META: Record<string, { label: string; icon: LucideIcon; dot: st
   performance: { label: 'Performance', icon: Ticket, dot: 'bg-terracotta-400', color: 'bg-terracotta-50 text-terracotta-700 ring-terracotta-200' },
   screening: { label: 'Screening', icon: Ticket, dot: 'bg-sky-400', color: 'bg-sky-50 text-sky-700 ring-sky-200' },
   festival: { label: 'Festival', icon: Sparkles, dot: 'bg-amber-400', color: 'bg-amber-50 text-amber-700 ring-amber-200' },
+  sport: { label: 'Sport', icon: Ticket, dot: 'bg-blue-400', color: 'bg-blue-50 text-blue-700 ring-blue-200' },
   concert: { label: 'Concert', icon: Ticket, dot: 'bg-emerald-400', color: 'bg-emerald-50 text-emerald-700 ring-emerald-200' },
   workshop: { label: 'Workshop', icon: Sparkles, dot: 'bg-stone-400', color: 'bg-stone-100 text-stone-700 ring-stone-300' },
   permanent_collection: { label: 'Permanent', icon: CalendarDays, dot: 'bg-sea-400', color: 'bg-sea-50 text-sea-700 ring-sea-200' },
@@ -77,14 +78,39 @@ function dayKey(d: Date): string {
 }
 
 function eventCoversDay(event: CalendarEvent, key: string): boolean {
+  const [year, month, day] = key.split('-').map(Number);
+  if (event.date_precision === 'month') {
+    const scheduledYear = Number(event.start_date.slice(0, 4));
+    const endMonth = event.end_date
+      ? Number(event.end_date.slice(5, 7))
+      : event.start_month;
+    return (
+      day === 1 &&
+      month >= event.start_month &&
+      month <= endMonth &&
+      (event.is_recurring || year === scheduledYear)
+    );
+  }
+
+  if (event.is_recurring) {
+    const [, startMonth, startDay] = event.start_date.split('-').map(Number);
+    const start = new Date(year, startMonth - 1, startDay);
+    const sourceEnd = event.end_date
+      ? new Date(`${event.end_date}T00:00:00`)
+      : new Date(`${event.start_date}T00:00:00`);
+    const durationDays = Math.max(
+      0,
+      Math.round((sourceEnd.getTime() - new Date(`${event.start_date}T00:00:00`).getTime()) / 86400000),
+    );
+    const end = new Date(start);
+    end.setDate(end.getDate() + durationDays);
+    const target = new Date(year, month - 1, day);
+    return target >= start && target <= end;
+  }
+
   const start = new Date(event.start_date + 'T00:00:00');
   const startKey = dayKey(start);
   if (key < startKey) return false;
-  if (event.is_recurring) {
-    const end = event.end_date ? new Date(event.end_date + 'T00:00:00') : start;
-    const endKey = dayKey(end);
-    return key <= endKey;
-  }
   if (event.end_date) {
     const endKey = dayKey(new Date(event.end_date + 'T00:00:00'));
     return key <= endKey;
@@ -101,14 +127,12 @@ export default function EventsCalendarPage() {
   const [cityFilter, setCityFilter] = useState<string>('all');
 
   const { data: allEvents, loading, error } = useAsync(() => fetchEventsCalendarData(), []);
+  const { data: allCities, loading: citiesLoading, error: citiesError } = useAsync(fetchCities, []);
 
-  const cities = useMemo(() => {
-    const set = new Map<string, string>();
-    allEvents?.forEach((e) => {
-      if (e.city_slug) set.set(e.city_slug, e.city_name);
-    });
-    return Array.from(set.entries()).sort((a, b) => a[1].localeCompare(b[1]));
-  }, [allEvents]);
+  const cities = useMemo(
+    () => [...(allCities ?? [])].sort((a, b) => a.name.localeCompare(b.name)),
+    [allCities],
+  );
 
   const filteredEvents = useMemo(() => {
     if (!allEvents) return [];
@@ -151,7 +175,7 @@ export default function EventsCalendarPage() {
     setSelectedDay(null);
   }
 
-  if (loading) {
+  if (loading || citiesLoading) {
     return (
       <div className="pt-32 container-page">
         <div className="h-10 w-64 animate-pulse rounded-xl bg-sea-100" />
@@ -160,11 +184,11 @@ export default function EventsCalendarPage() {
     );
   }
 
-  if (error) {
+  if (error || citiesError) {
     return (
       <div className="pt-32 container-page">
         <div className="rounded-2xl border border-terracotta-200 bg-terracotta-50 p-12 text-center">
-          <p className="text-terracotta-800">{error}</p>
+          <p className="text-terracotta-800">{error ?? citiesError}</p>
         </div>
       </div>
     );
@@ -182,7 +206,7 @@ export default function EventsCalendarPage() {
             Events across Croatia
           </h1>
           <p className="mt-3 text-base leading-relaxed text-sea-600">
-            Browse museum exhibitions, theatre performances, film screenings, and festivals happening across all {cities.length} cities. Click any day to see what's on.
+            Browse sourced festivals and happenings across {cities.length} destinations. Month-only listings appear on each month’s first day as a marker; check the linked organizer for confirmed dates.
           </p>
         </div>
       </section>
@@ -227,8 +251,8 @@ export default function EventsCalendarPage() {
             className="rounded-xl border border-sea-200 bg-white px-4 py-2 text-sm text-sea-700 shadow-soft focus:border-sea-500 focus:outline-none focus:ring-2 focus:ring-sea-500/20"
           >
             <option value="all">All cities</option>
-            {cities.map(([slug, name]) => (
-              <option key={slug} value={slug}>{name}</option>
+            {cities.map((city) => (
+              <option key={city.slug} value={city.slug}>{city.name}</option>
             ))}
           </select>
         </div>
@@ -403,6 +427,11 @@ export default function EventsCalendarPage() {
                         <MapPin className="h-3 w-3" />
                         {event.venue_name}, {event.city_name}
                       </Link>
+                      {event.date_precision === 'month' && (
+                        <div className="mt-2 inline-flex w-fit items-center rounded-full bg-sand-100 px-2.5 py-1 text-[11px] font-semibold text-sand-800">
+                          Dates to be confirmed
+                        </div>
+                      )}
                       {event.schedule_note && (
                         <div className="mt-1.5 flex items-start gap-1.5 text-xs text-sea-400">
                           <Clock className="mt-0.5 h-3 w-3 shrink-0" />
@@ -420,6 +449,16 @@ export default function EventsCalendarPage() {
                         ) : (
                           <span />
                         )}
+                        {event.source_url && (
+                          <a
+                            href={event.source_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 text-xs font-semibold text-sea-600 transition-colors hover:text-sea-800"
+                          >
+                            Official info <ExternalLink className="h-3 w-3" />
+                          </a>
+                        )}
                         {event.ticket_url && (
                           <a
                             href={event.ticket_url}
@@ -427,7 +466,7 @@ export default function EventsCalendarPage() {
                             rel="noopener noreferrer"
                             className="inline-flex items-center gap-1 text-xs font-semibold text-terracotta-600 transition-colors hover:text-terracotta-700"
                           >
-                            Tickets & info <ExternalLink className="h-3 w-3" />
+                            Tickets <ExternalLink className="h-3 w-3" />
                           </a>
                         )}
                       </div>
