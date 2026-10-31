@@ -55,7 +55,7 @@ INSERT INTO venues (
   city_id, name, category, description, rating, price_from_eur, image_url,
   address, source, featured, source_url, venue_type
 )
-SELECT c.id, v.name, v.category, v.description, NULL, NULL, v.image_url,
+SELECT c.id, v.name, v.category, v.description, NULL, NULL, c.image_url,
   NULL, v.source, false, v.source_url, v.venue_type
 FROM (
   VALUES
