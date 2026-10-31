@@ -8,6 +8,7 @@ import { Link, useRouter } from '@/lib/router';
 import VenueCard from '@/components/VenueCard';
 import SpecialtiesSection from '@/components/SpecialtiesSection';
 import EventsSection from '@/components/EventsSection';
+import WeatherForecast from '@/components/WeatherForecast';
 
 export default function CityDetailPage({ slug }: { slug: string }) {
   const { navigate } = useRouter();
@@ -92,6 +93,8 @@ export default function CityDetailPage({ slug }: { slug: string }) {
       {c.specialties && c.specialties.length > 0 && (
         <SpecialtiesSection cityName={c.name} specialties={c.specialties} />
       )}
+
+      <WeatherForecast latitude={c.lat} longitude={c.lng} />
 
       {/* Events */}
       {c.events && c.events.length > 0 && (

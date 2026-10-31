@@ -21,6 +21,7 @@ const EVENT_TYPE_META: Record<string, { label: string; icon: LucideIcon; color: 
   performance: { label: 'Performance', icon: Ticket, color: 'bg-terracotta-50 text-terracotta-700 ring-terracotta-200' },
   screening: { label: 'Screening', icon: Ticket, color: 'bg-sea-50 text-sea-700 ring-sea-200' },
   festival: { label: 'Festival', icon: Sparkles, color: 'bg-amber-50 text-amber-700 ring-amber-200' },
+  sport: { label: 'Sport', icon: Ticket, color: 'bg-blue-50 text-blue-700 ring-blue-200' },
   concert: { label: 'Concert', icon: Ticket, color: 'bg-emerald-50 text-emerald-700 ring-emerald-200' },
   workshop: { label: 'Workshop', icon: Sparkles, color: 'bg-stone-100 text-stone-700 ring-stone-300' },
   permanent_collection: { label: 'Permanent', icon: Calendar, color: 'bg-sea-50 text-sea-700 ring-sea-200' },
@@ -29,15 +30,30 @@ const EVENT_TYPE_META: Record<string, { label: string; icon: LucideIcon; color: 
 };
 
 function formatDateRange(start: string, end: string | null): string {
-  const startDate = new Date(start);
+  const [startYear, startMonth, startDay] = start.split('-').map(Number);
+  const startDate = new Date(startYear, startMonth - 1, startDay);
   const startStr = `${startDate.getDate()} ${MONTH_NAMES[startDate.getMonth()]}`;
   if (!end) return startStr;
-  const endDate = new Date(end);
+  const [endYear, endMonth, endDay] = end.split('-').map(Number);
+  const endDate = new Date(endYear, endMonth - 1, endDay);
   const endStr = `${endDate.getDate()} ${MONTH_NAMES[endDate.getMonth()]}`;
   if (startDate.getMonth() === endDate.getMonth() && startDate.getFullYear() === endDate.getFullYear()) {
     return `${startDate.getDate()}–${endStr}`;
   }
   return `${startStr} – ${endStr}`;
+}
+
+function formatEventDate(event: VenueEvent): string {
+  if (event.date_precision === 'month') {
+    const endMonth = event.end_date
+      ? Number(event.end_date.slice(5, 7))
+      : event.start_month;
+    const months = endMonth === event.start_month
+      ? MONTH_NAMES[event.start_month - 1]
+      : `${MONTH_NAMES[event.start_month - 1]}–${MONTH_NAMES[endMonth - 1]}`;
+    return `${months} ${event.start_date.slice(0, 4)} · dates to be confirmed`;
+  }
+  return formatDateRange(event.start_date, event.end_date);
 }
 
 function getSeason(month: number): string {
@@ -73,7 +89,7 @@ export default function EventsSection({
           Events & programs in {cityName}
         </h2>
         <p className="mt-2 max-w-2xl text-sm text-sea-600">
-          Exhibitions, performances, screenings, and festivals happening at cultural venues throughout the year.
+          Festivals and local happenings. Listings link to official organizers; dates marked TBC are not yet published.
         </p>
       </div>
 
@@ -131,7 +147,7 @@ export default function EventsSection({
 
               <div className="mt-2 flex items-center gap-2 text-sm text-sea-500">
                 <Calendar className="h-3.5 w-3.5 shrink-0" />
-                <span>{formatDateRange(event.start_date, event.end_date)}</span>
+                <span>{formatEventDate(event)}</span>
               </div>
 
               {event.schedule_note && (
@@ -155,6 +171,16 @@ export default function EventsSection({
                 ) : (
                   <span />
                 )}
+                {event.source_url && (
+                  <a
+                    href={event.source_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-xs font-semibold text-sea-600 transition-colors hover:text-sea-800"
+                  >
+                    Official info <ExternalLink className="h-3 w-3" />
+                  </a>
+                )}
                 {event.ticket_url && (
                   <a
                     href={event.ticket_url}
@@ -162,7 +188,7 @@ export default function EventsSection({
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-1 text-xs font-semibold text-terracotta-600 transition-colors hover:text-terracotta-700"
                   >
-                    Tickets & info <ExternalLink className="h-3 w-3" />
+                    Tickets <ExternalLink className="h-3 w-3" />
                   </a>
                 )}
               </div>
