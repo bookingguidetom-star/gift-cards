@@ -10,6 +10,8 @@ import HowItWorksPage from '@/pages/HowItWorksPage';
 import BalancePage from '@/pages/BalancePage';
 import CreatePage from '@/pages/CreatePage';
 import EventsCalendarPage from '@/pages/EventsCalendarPage';
+import EventDetailPage from '@/pages/EventDetailPage';
+import EventCheckoutPage from '@/pages/EventCheckoutPage';
 import CartPage from '@/pages/CartPage';
 
 function Routes() {
@@ -27,6 +29,10 @@ function Routes() {
     if (segments[0] === 'experiences' && segments[1]) return { kind: 'experience-category' as const, category: segments[1] };
     if (segments[0] === 'experiences') return { kind: 'experiences' as const };
     if (segments[0] === 'events') return { kind: 'events' as const };
+    if (segments[0] === 'event' && segments[1]) return { kind: 'event' as const, eventId: segments[1] };
+    if (segments[0] === 'checkout' && segments[1] === 'event' && segments[2]) {
+      return { kind: 'event-checkout' as const, eventId: segments[2] };
+    }
     if (segments[0] === 'cart') return { kind: 'cart' as const };
     if (segments[0] === 'how-it-works') return { kind: 'how' as const };
     if (segments[0] === 'balance') return { kind: 'balance' as const };
@@ -44,6 +50,8 @@ function Routes() {
         {route.kind === 'experiences' && <ExperiencesPage />}
         {route.kind === 'experience-category' && <ExperienceCategoryPage category={route.category} />}
         {route.kind === 'events' && <EventsCalendarPage />}
+        {route.kind === 'event' && <EventDetailPage eventId={route.eventId} />}
+        {route.kind === 'event-checkout' && <EventCheckoutPage eventId={route.eventId} />}
         {route.kind === 'cart' && <CartPage />}
         {route.kind === 'how' && <HowItWorksPage />}
         {route.kind === 'balance' && <BalancePage />}

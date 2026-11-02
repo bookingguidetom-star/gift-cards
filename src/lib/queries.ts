@@ -100,6 +100,35 @@ export async function fetchEventsCalendarData(): Promise<CalendarEvent[]> {
   });
 }
 
+export async function fetchEventById(id: string): Promise<CalendarEvent | null> {
+  const { data: event, error } = await supabase
+    .from('venue_events')
+    .select('*')
+    .eq('id', id)
+    .maybeSingle();
+  if (error) throw error;
+  if (!event) return null;
+
+  const [venueRes, cityRes] = await Promise.all([
+    event.venue_id
+      ? supabase.from('venues').select('id, name, city_id').eq('id', event.venue_id).maybeSingle()
+      : Promise.resolve({ data: null, error: null }),
+    supabase.from('cities').select('id, name, slug').eq('id', event.city_id).maybeSingle(),
+  ]);
+  if (venueRes.error) throw venueRes.error;
+  if (cityRes.error) throw cityRes.error;
+
+  const venue = venueRes.data as { id: string; name: string; city_id: string } | null;
+  const city = cityRes.data as { id: string; name: string; slug: string } | null;
+
+  return {
+    ...(event as VenueEvent),
+    venue_name: event.event_venue ?? venue?.name ?? city?.name ?? 'Unknown location',
+    city_name: city?.name ?? '',
+    city_slug: city?.slug ?? '',
+  };
+}
+
 export async function fetchEventsByCityId(cityId: string): Promise<VenueEvent[]> {
   const { data, error } = await supabase
     .from('venue_events')

@@ -192,6 +192,12 @@ export default function EventsSection({
                   </a>
                 )}
               </div>
+              <Link
+                to={`/event/${event.id}`}
+                className="mt-3 inline-flex items-center justify-center gap-1.5 rounded-full border border-sea-200 bg-white px-4 py-2 text-xs font-semibold text-sea-700 transition-colors hover:border-sea-400 hover:text-sea-950"
+              >
+                <Ticket className="h-3.5 w-3.5" /> View event & tickets
+              </Link>
             </div>
           );
         })}
